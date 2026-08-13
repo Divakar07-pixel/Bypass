@@ -1,21 +1,47 @@
-# Bulk PDF Downloader (Unlimited Wait + CAPTCHA OCR)
+# Bulk PDF Downloader
 
-A Python-based Selenium automation tool for downloading Tamil Nadu Electoral Roll PDFs in bulk from the TN eRolls portal. The script automatically solves CAPTCHA images using OCR, downloads PDFs, renames files based on polling station codes, logs progress, and prevents the system from sleeping during long-running download sessions.
+Python-based automation tool developed for internal operational use to download Electoral Roll PDF documents in bulk, automatically solve CAPTCHA challenges using OCR, manage downloads, and generate execution logs.
+
+## Overview
+
+This application automates the process of:
+
+* Reading PDF URLs from an Excel file
+* Opening each URL in Chrome using Selenium
+* Solving CAPTCHA images using OCR
+* Downloading PDF files automatically
+* Renaming files based on polling station codes
+* Recording download status and performance metrics
+* Supporting resume functionality for interrupted runs
+* Preventing system sleep during long download sessions
 
 ## Features
 
-* Bulk PDF download from Excel input file
-* Automatic CAPTCHA recognition using ddddocr
-* Unlimited wait for slow downloads
-* Automatic file renaming using `pt` parameter from URL
-* Resume support (skips already downloaded files)
-* Download speed and file size tracking
-* Failure logging and retry mechanism
-* Automatic Chrome download handling
-* Prevents Windows sleep mode during execution
-* Detailed execution logs
+### Automated Processing
 
-## Folder Structure
+* Bulk URL processing from Excel
+* CAPTCHA recognition using ddddocr
+* Automatic PDF download
+* Automatic file naming
+* Automatic retry mechanism
+
+### Download Management
+
+* Unlimited wait for slow downloads
+* Download progress tracking
+* Resume capability
+* Failed URL tracking
+* Automatic Chrome session recovery
+
+### Monitoring & Logging
+
+* Runtime logs
+* Download history logs
+* Success and failure statistics
+* Download speed monitoring
+* File size tracking
+
+## Project Structure
 
 ```text
 Bypass/
@@ -24,7 +50,7 @@ Bypass/
 │   └── pdflink.xlsx
 │
 ├── Output/
-│   └── Downloaded PDFs
+│   └── Downloaded PDF Files
 │
 ├── Logs/
 │   ├── run.log
@@ -34,13 +60,23 @@ Bypass/
 └── gemini.py
 ```
 
-## Requirements
+## Technology Stack
+
+* Python
+* Selenium WebDriver
+* Google Chrome
+* OpenPyXL
+* ddddocr
+* CSV Logging
+* Windows Power Management APIs
+
+## Prerequisites
 
 ### Python
 
-Python 3.10+
+Python 3.10 or later
 
-### Install Dependencies
+### Required Packages
 
 ```bash
 pip install selenium
@@ -48,7 +84,7 @@ pip install openpyxl
 pip install ddddocr
 ```
 
-Or:
+Or install using:
 
 ```bash
 pip install -r requirements.txt
@@ -62,18 +98,9 @@ openpyxl
 ddddocr
 ```
 
-## Chrome Requirements
-
-Install:
-
-* Google Chrome
-* Compatible ChromeDriver
-
-Ensure ChromeDriver is available in your system PATH or in the project directory.
-
 ## Input File Format
 
-Create:
+Create the file:
 
 ```text
 Input/pdflink.xlsx
@@ -81,37 +108,45 @@ Input/pdflink.xlsx
 
 Example:
 
-| S.No | PDF Link                                                                                       |
-| ---- | ---------------------------------------------------------------------------------------------- |
-| 1    | https://www.erolls.tn.gov.in/rollpdf/Verification_DR_29102024.aspx?dt=dt5&ac=ac051&pt=ac051001 |
-| 2    | https://www.erolls.tn.gov.in/rollpdf/Verification_DR_29102024.aspx?dt=dt5&ac=ac051&pt=ac051002 |
-| 3    | https://www.erolls.tn.gov.in/rollpdf/Verification_DR_29102024.aspx?dt=dt5&ac=ac051&pt=ac051003 |
+| S.No | PDF Link                  |
+| ---- | ------------------------- |
+| 1    | https://example.com/link1 |
+| 2    | https://example.com/link2 |
+| 3    | https://example.com/link3 |
 
-**Important:** URLs must be stored in Column B and data should start from Row 2.
+### Important
 
-## Output Naming
+* URLs should be placed in Column B.
+* Data should start from Row 2.
+* Row 1 should contain headers.
 
-The script automatically extracts the polling station code from the URL.
+## Output
+
+Downloaded files are saved to:
+
+```text
+Output/
+```
+
+Files are automatically named based on the polling station code extracted from the URL.
 
 Example:
 
 ```text
-https://...&pt=ac051001
-```
-
-Downloads as:
-
-```text
 ac051001.pdf
+ac051002.pdf
+ac051003.pdf
 ```
 
-## Running the Script
+## Execution
+
+Run the script:
 
 ```bash
 python gemini.py
 ```
 
-Example:
+or
 
 ```bash
 py gemini.py
@@ -132,16 +167,17 @@ Contains:
 * Filename
 * Status
 * File Size
-* Download Time
+* Download Duration
 * Download Speed
+* Notes
 
-### Failed URLs
+### Failed URL Log
 
 ```text
 Logs/failed_urls_YYYYMMDD.txt
 ```
 
-Stores URLs that failed after all retry attempts.
+Stores URLs that could not be processed successfully.
 
 ### Runtime Log
 
@@ -149,93 +185,49 @@ Stores URLs that failed after all retry attempts.
 Logs/run.log
 ```
 
-Stores detailed execution logs and errors.
+Contains application events, warnings, and error messages.
 
-## CAPTCHA Handling
+## CAPTCHA Processing
 
-The script:
+The application uses OCR technology to:
 
-1. Opens the PDF download page.
-2. Captures CAPTCHA image.
-3. Uses ddddocr to predict text.
-4. Submits CAPTCHA automatically.
-5. Retries if CAPTCHA is incorrect.
-6. Refreshes CAPTCHA for subsequent attempts.
+1. Capture CAPTCHA image.
+2. Extract text automatically.
+3. Submit CAPTCHA.
+4. Retry when validation fails.
+5. Refresh CAPTCHA when required.
 
-Default OCR retries:
+## Resume Support
 
-```python
-MAX_OCR_RETRIES = 3
-```
+Previously downloaded files are identified from the log history and skipped automatically during subsequent runs.
 
-## Download Process
+This allows safe recovery after:
 
-### Phase 1
-
-Waits up to 15 seconds to verify that the download has started.
-
-### Phase 2
-
-Once a download begins, the script waits indefinitely until:
-
-* Download completes
-* File is fully written
-* File is renamed correctly
-
-This ensures reliable downloads even on slow internet connections.
-
-## Resume Capability
-
-The script automatically checks:
-
-```text
-download_log_YYYYMMDD.csv
-```
-
-and skips files already downloaded successfully.
-
-This allows safe restart after:
-
+* Network interruptions
 * System restart
-* Power failure
-* Internet interruption
-* Manual stop
+* Application restart
+* Manual termination
 
-## Safety Features
+## Security & Usage
 
-* Prevents Windows sleep mode while running
-* Restores normal sleep settings after completion
-* Detects closed Chrome sessions and relaunches automatically
-* Handles server alerts and CAPTCHA failures
-* Supports long-running download batches
+This application is intended solely for authorized operational use.
 
-## Example Console Output
+Users are responsible for ensuring compliance with applicable organizational policies, operational procedures, and system access requirements before executing the automation.
 
-```text
-============================================================
-Bulk PDF Downloader (Unlimited Wait + Keep Awake)
-Started : 2026-08-13 21:19:22
-Output  : F:\Automation_Work\Bypass\Output
-============================================================
+## Confidentiality Notice
 
-Total URLs    : 100
-Already done  : 20
-Pending       : 80
+This repository contains software developed for internal business operations.
 
-[1/80] Processing: ac051001.pdf
-OCR Attempt 1/3: Extracted '8J2K'
-Download in progress...
-Saved: ac051001.pdf (560 KB)
+The source code, documentation, workflows, and implementation details may contain operational knowledge intended for authorized personnel only.
 
-Progress: 1/80 (1.3%)
-```
+Do not distribute, publish, or disclose any portion of this repository externally without appropriate approval from the organization.
 
-## Disclaimer
+## Maintenance
 
-This project is intended for educational, research, and administrative automation purposes only. Ensure compliance with the terms of use and policies of the target website before running large-scale automated downloads.
+For issue reporting, enhancements, or operational support, contact the project owner or designated maintenance team.
 
 ## Author
 
 Divakar R
 
-Tamil Nadu Electoral Roll PDF Automation Project
+Operations Automation Project
