@@ -57,7 +57,7 @@ Bypass/
 │   ├── download_log_YYYYMMDD.csv
 │   └── failed_urls_YYYYMMDD.txt
 │
-└── gemini.py
+└── decoder.py
 ```
 
 ## Technology Stack
@@ -143,13 +143,13 @@ ac051003.pdf
 Run the script:
 
 ```bash
-python gemini.py
+python decoder.py
 ```
 
 or
 
 ```bash
-py gemini.py
+py decoder.py
 ```
 
 ## Logging
